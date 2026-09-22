@@ -1,39 +1,76 @@
 # Enterprise Knowledge Intelligence Platform
 
-A Retrieval-Augmented Generation (RAG) platform for asking natural-language questions over an organization's documents (HR policies, handbooks, SOPs, manuals) with permission-aware retrieval and source citations.
+An AI-enhanced enterprise document intelligence platform that allows users to upload organizational documents and ask natural-language questions over their content.
 
-> **Current status: M0 - project scaffold only.**
-> No feature is implemented yet. Nothing in this repository has been evaluated.
-> This README will grow milestone by milestone; sections marked _planned_ describe intent, not existing functionality.
+The system combines document ingestion, text chunking, semantic embeddings, keyword retrieval, hybrid search, reranking, grounded answer generation, source citations, authentication, role-based access control, feedback analytics, and evaluation.
 
-## Planned scope
+---
 
-- JWT authentication and role-based access control (ADMIN / HR / EMPLOYEE)
-- PDF ingestion with page-aware extraction, chunking and metadata
-- Hybrid retrieval (pgvector semantic search + PostgreSQL keyword search), reranking
-- Grounded answers with citations; refusal when evidence is insufficient
-- Evaluation framework (Recall@K, faithfulness, citation correctness, latency)
+## 🚀 Project Overview
 
-## Stack (decided so far)
+Organizations store critical information across HR policies, employee handbooks, SOPs, technical documentation, manuals, and internal knowledge bases.
 
-React (Vite) - FastAPI - PostgreSQL + pgvector - Docker. Everything else is added only when a milestone needs it.
+Finding the correct information manually can be slow and error-prone.
 
-## Repository layout
+This project provides a centralized knowledge intelligence platform where users can:
 
-See `backend/README.md`, `frontend/README.md` and `docs/`.
+- Upload PDF documents
+- Automatically extract document text
+- Split documents into searchable chunks
+- Generate semantic embeddings
+- Search using both semantic and keyword matching
+- Rerank retrieved results
+- Ask natural-language questions
+- Receive answers grounded in retrieved document content
+- View supporting source chunks
+- Submit answer feedback
+- Restrict access using authentication and roles
 
-## Getting started
+---
 
-_Planned - written when M1 is verified._
+## 🏗️ Architecture
 
-## Evaluation results
-
-Not evaluated yet.
-
-## Limitations
-
-To be documented honestly as the system is built.
-
-## License
-
-MIT - see `LICENSE`.
+```text
+                    ┌──────────────────────┐
+                    │     React Frontend   │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │    FastAPI Backend   │
+                    └──────────┬───────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+              ▼                ▼                ▼
+        Authentication    Document         Feedback &
+           & RBAC         Ingestion        Analytics
+                              │
+                              ▼
+                       Text Extraction
+                              │
+                              ▼
+                           Chunking
+                              │
+                              ▼
+                         Embeddings
+                              │
+                ┌─────────────┴─────────────┐
+                ▼                           ▼
+          Semantic Search             Keyword Search
+                │                           │
+                └─────────────┬─────────────┘
+                              ▼
+                       Hybrid Retrieval
+                              │
+                              ▼
+                          Reranking
+                              │
+                              ▼
+                    Grounded Answering
+                              │
+                              ▼
+                    Grounding Validation
+                              │
+                              ▼
+                    Answer + Citations
