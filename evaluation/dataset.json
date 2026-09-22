@@ -1,0 +1,45 @@
+[
+  {
+    "question": "What programming languages are listed in the technical skills section?",
+    "expected_keywords": [
+      "Java",
+      "Python",
+      "JavaScript",
+      "HTML",
+      "CSS",
+      "SQL"
+    ]
+  },
+  {
+    "question": "Which frameworks and libraries are mentioned?",
+    "expected_keywords": [
+      "Spring Boot",
+      "Hibernate",
+      "Flask",
+      "BeautifulSoup4"
+    ]
+  },
+  {
+    "question": "Which database technology is mentioned in the technical skills?",
+    "expected_keywords": [
+      "MySQL"
+    ]
+  },
+  {
+    "question": "Which technologies were used for backend development?",
+    "expected_keywords": [
+      "Java",
+      "Spring Boot",
+      "RESTful APIs",
+      "Hibernate",
+      "MySQL"
+    ]
+  },
+  {
+    "question": "Which LLM APIs are mentioned?",
+    "expected_keywords": [
+      "Claude AI",
+      "Google Gemini"
+    ]
+  }
+]

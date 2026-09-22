@@ -14,3 +14,5 @@ psycopg[binary]>=3.3
 pgvector
 pyjwt
 argon2-cffi
+email-validator
+pypdf

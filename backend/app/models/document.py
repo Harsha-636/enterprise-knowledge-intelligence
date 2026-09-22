@@ -37,6 +37,27 @@ class Document(Base):
         nullable=False,
     )
 
+    document_type: Mapped[str] = mapped_column(
+        String(50),
+        default="pdf",
+        nullable=False,
+    )
+
+    page_count: Mapped[int] = mapped_column(
+        default=0,
+        nullable=False,
+    )
+
+    word_count: Mapped[int] = mapped_column(
+        default=0,
+        nullable=False,
+    )
+
+    character_count: Mapped[int] = mapped_column(
+        default=0,
+        nullable=False,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,

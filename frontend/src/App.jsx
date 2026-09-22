@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -13,11 +13,52 @@ function App() {
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  const [documents, setDocuments] = useState([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsMessage, setDocumentsMessage] = useState("");
+
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [sources, setSources] = useState([]);
   const [rewrittenQuery, setRewrittenQuery] = useState("");
   const [asking, setAsking] = useState(false);
+
+  const loadDocuments = async () => {
+    setDocumentsLoading(true);
+    setDocumentsMessage("");
+
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(
+        "http://127.0.0.1:8001/documents",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to load documents");
+      }
+
+      setDocuments(data);
+    } catch (error) {
+      setDocumentsMessage(error.message);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (loggedIn) {
+      loadDocuments();
+    }
+  }, [loggedIn]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -48,7 +89,6 @@ function App() {
 
       localStorage.setItem("access_token", data.access_token);
       setLoggedIn(true);
-
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -88,12 +128,16 @@ function App() {
         throw new Error(data.detail || "Upload failed");
       }
 
-      setUploadMessage(
-        `Upload successful: ${data.filename}`
-      );
-
+      setUploadMessage(`Upload successful: ${data.filename}`);
       setSelectedFile(null);
 
+      const fileInput = document.getElementById("document-upload");
+
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
+      await loadDocuments();
     } catch (error) {
       setUploadMessage(error.message);
     } finally {
@@ -137,7 +181,6 @@ function App() {
       setAnswer(data.answer);
       setSources(data.sources || []);
       setRewrittenQuery(data.rewritten_query || "");
-
     } catch (error) {
       setAnswer(error.message);
     } finally {
@@ -147,18 +190,22 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
+
     setLoggedIn(false);
     setAnswer("");
     setSources([]);
     setQuestion("");
+    setSelectedFile(null);
+    setUploadMessage("");
+    setRewrittenQuery("");
+    setDocuments([]);
   };
 
   if (loggedIn) {
     return (
       <div className="dashboard">
 
-        <div className="dashboard-header">
-
+        <header className="dashboard-header">
           <div>
             <h1>Enterprise Knowledge</h1>
             <p>Knowledge Intelligence Platform</p>
@@ -167,10 +214,9 @@ function App() {
           <button onClick={handleLogout}>
             Logout
           </button>
+        </header>
 
-        </div>
-
-        <div className="dashboard-content">
+        <main className="dashboard-content">
 
           <h2>Knowledge Dashboard</h2>
 
@@ -178,21 +224,31 @@ function App() {
             Manage documents and interact with your enterprise knowledge.
           </p>
 
-          <div className="upload-section">
+          {/* Upload */}
+
+          <section className="upload-section">
 
             <h3>📄 Upload Document</h3>
 
             <p>
-              Upload a PDF to add it to the knowledge base.
+              Upload a PDF to add it to your enterprise knowledge base.
             </p>
 
             <input
+              id="document-upload"
               type="file"
-              accept=".pdf"
-              onChange={(event) =>
-                setSelectedFile(event.target.files[0])
-              }
+              accept=".pdf,application/pdf"
+              onChange={(event) => {
+                setSelectedFile(event.target.files[0] || null);
+                setUploadMessage("");
+              }}
             />
+
+            {selectedFile && (
+              <p>
+                Selected file: <strong>{selectedFile.name}</strong>
+              </p>
+            )}
 
             <button
               onClick={handleUpload}
@@ -207,28 +263,105 @@ function App() {
               </p>
             )}
 
-          </div>
+          </section>
 
-          <div className="assistant-section">
+          {/* Documents */}
+
+          <section className="documents-section">
+
+            <div className="documents-header">
+
+              <div>
+                <h3>📚 My Documents</h3>
+
+                <p>
+                  Documents available in your knowledge base.
+                </p>
+              </div>
+
+              <button
+                onClick={loadDocuments}
+                disabled={documentsLoading}
+              >
+                {documentsLoading ? "Refreshing..." : "Refresh"}
+              </button>
+
+            </div>
+
+            {documentsMessage && (
+              <p className="message">
+                {documentsMessage}
+              </p>
+            )}
+
+            {!documentsLoading && documents.length === 0 && !documentsMessage && (
+              <div className="empty-documents">
+                <p>No documents uploaded yet.</p>
+              </div>
+            )}
+
+            {documents.length > 0 && (
+              <div className="document-list">
+
+                {documents.map((document) => (
+                  <div
+                    className="document-item"
+                    key={document.id}
+                  >
+
+                    <div className="document-icon">
+                      📄
+                    </div>
+
+                    <div className="document-info">
+
+                      <strong>
+                        {document.filename}
+                      </strong>
+
+                      <span>
+                        Document ID: {document.id}
+                      </span>
+
+                      <span>
+                        Status: {document.status}
+                      </span>
+
+                    </div>
+
+                    <div className="document-status">
+                      {document.status}
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+            )}
+
+          </section>
+
+          {/* AI Assistant */}
+
+          <section className="assistant-section">
 
             <h3>🤖 AI Knowledge Assistant</h3>
 
             <p>
-              Ask a question about your uploaded documents.
+              Ask questions about information contained in your uploaded
+              enterprise documents.
             </p>
 
             <textarea
               value={question}
-              onChange={(event) =>
-                setQuestion(event.target.value)
-              }
-              placeholder="Example: What programming skills does Harsha have?"
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder="Example: What is this document about?"
               rows="4"
             />
 
             <button
               onClick={handleAsk}
-              disabled={asking}
+              disabled={asking || !question.trim()}
             >
               {asking ? "Thinking..." : "Ask AI"}
             </button>
@@ -244,9 +377,15 @@ function App() {
 
                 {rewrittenQuery && (
                   <div className="query-info">
-                    <strong>Rewritten query:</strong>
+
+                    <strong>
+                      Rewritten query:
+                    </strong>
+
                     <br />
+
                     {rewrittenQuery}
+
                   </div>
                 )}
 
@@ -273,9 +412,33 @@ function App() {
                     </p>
 
                     <small>
-                      Hybrid: {source.score.toFixed(3)}
+
+                      Hybrid:{" "}
+                      {typeof source.score === "number"
+                        ? source.score.toFixed(3)
+                        : "N/A"}
+
                       {" | "}
-                      Rerank: {source.rerank_score.toFixed(3)}
+
+                      Semantic:{" "}
+                      {typeof source.semantic_score === "number"
+                        ? source.semantic_score.toFixed(3)
+                        : "N/A"}
+
+                      {" | "}
+
+                      Keyword:{" "}
+                      {typeof source.keyword_score === "number"
+                        ? source.keyword_score.toFixed(3)
+                        : "N/A"}
+
+                      {" | "}
+
+                      Rerank:{" "}
+                      {typeof source.rerank_score === "number"
+                        ? source.rerank_score.toFixed(3)
+                        : "N/A"}
+
                     </small>
 
                   </div>
@@ -284,35 +447,38 @@ function App() {
               </div>
             )}
 
-          </div>
+          </section>
+
+          {/* Feature Cards */}
 
           <div className="dashboard-cards">
 
             <div className="dashboard-card">
               <h3>📄 Documents</h3>
               <p>
-                Upload and manage your organizational documents.
+                Upload and manage organizational documents.
               </p>
             </div>
 
             <div className="dashboard-card">
               <h3>🔎 Knowledge Search</h3>
               <p>
-                Search information across your documents.
+                Search information across your enterprise documents using
+                semantic and keyword retrieval.
               </p>
             </div>
 
             <div className="dashboard-card">
               <h3>🤖 AI Assistant</h3>
               <p>
-                Get grounded answers with document citations.
+                Get answers grounded in retrieved document content with
+                source information.
               </p>
             </div>
 
           </div>
 
-        </div>
-
+        </main>
       </div>
     );
   }
@@ -330,7 +496,10 @@ function App() {
 
           <div>
             <h1>Enterprise Knowledge</h1>
-            <p>Knowledge Intelligence Platform</p>
+
+            <p>
+              Knowledge Intelligence Platform
+            </p>
           </div>
 
         </div>
@@ -347,9 +516,12 @@ function App() {
 
         <form onSubmit={handleLogin}>
 
-          <label>Email</label>
+          <label htmlFor="email">
+            Email
+          </label>
 
           <input
+            id="email"
             type="email"
             placeholder="you@company.com"
             value={email}
@@ -359,9 +531,12 @@ function App() {
             required
           />
 
-          <label>Password</label>
+          <label htmlFor="password">
+            Password
+          </label>
 
           <input
+            id="password"
             type="password"
             placeholder="Enter your password"
             value={password}

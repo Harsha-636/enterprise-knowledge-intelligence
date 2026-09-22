@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import uuid4
 
 from pypdf import PdfReader
 from sqlalchemy.orm import Session
@@ -19,7 +20,10 @@ def save_document(
     uploaded_by: int,
 ) -> Document:
 
-    file_path = UPLOAD_DIR / filename
+    original_filename = Path(filename).name
+    safe_filename = f"{uuid4().hex}_{original_filename}"
+
+    file_path = UPLOAD_DIR / safe_filename
     file_path.write_bytes(file_bytes)
 
     reader = PdfReader(str(file_path))
@@ -32,25 +36,31 @@ def save_document(
         if text:
             extracted_text += text + "\n"
 
+    page_count = len(reader.pages)
+    word_count = len(extracted_text.split())
+    character_count = len(extracted_text)
+
     document = Document(
-        filename=filename,
+        filename=original_filename,
         file_path=str(file_path),
         content=extracted_text,
         status="processed",
         uploaded_by=uploaded_by,
+        document_type="pdf",
+        page_count=page_count,
+        word_count=word_count,
+        character_count=character_count,
     )
 
     db.add(document)
     db.commit()
     db.refresh(document)
 
-    # Create chunks
     create_document_chunks(
         db=db,
         document=document,
     )
 
-    # Create embeddings
     embed_document_chunks(
         db=db,
         document_id=document.id,

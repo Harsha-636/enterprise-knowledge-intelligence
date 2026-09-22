@@ -4,6 +4,7 @@ from backend.app.generation.llm_service import generate_answer
 from backend.app.retrieval.query_rewriter import rewrite_query
 from backend.app.retrieval.hybrid_search import hybrid_search
 from backend.app.retrieval.reranker import rerank
+from backend.app.services.grounding_service import validate_grounding
 
 
 def answer_question(
@@ -13,10 +14,8 @@ def answer_question(
     top_k: int = 3,
 ) -> dict:
 
-    # Step 1: Rewrite the user's question
     rewritten_query = rewrite_query(question)
 
-    # Step 2: Retrieve only this user's documents
     candidates = hybrid_search(
         db=db,
         query=rewritten_query,
@@ -26,39 +25,47 @@ def answer_question(
 
     if not candidates:
         return {
-            "answer": (
-                "I could not find this information "
-                "in the available documents."
-            ),
+            "answer": "I could not find this information in the available documents.",
             "sources": [],
             "rewritten_query": rewritten_query,
+            "grounding": {
+                "grounded": False,
+                "score": 0.0,
+                "reason": "No supporting documents found",
+            },
         }
 
-    # Step 3: Rerank retrieved candidates
     results = rerank(
         query=question,
         results=candidates,
         top_k=top_k,
     )
 
-    # Step 4: Build context
     context_parts = []
 
     for result in results:
         context_parts.append(
-            f"[Chunk {result['chunk_id']}]\n"
-            f"{result['content']}"
+            f"[Chunk {result['chunk_id']}]\n{result['content']}"
         )
 
     context = "\n\n".join(context_parts)
 
-    # Step 5: Generate grounded answer
     answer = generate_answer(
         question=question,
         context=context,
     )
 
-    # Step 6: Return answer and sources
+    grounding = validate_grounding(
+        answer=answer,
+        context=context,
+    )
+
+    if not grounding["grounded"]:
+        answer = (
+            "I could not verify this answer from the available "
+            "document context."
+        )
+
     sources = [
         {
             "chunk_id": result["chunk_id"],
@@ -76,4 +83,5 @@ def answer_question(
         "answer": answer,
         "sources": sources,
         "rewritten_query": rewritten_query,
+        "grounding": grounding,
     }
