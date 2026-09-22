@@ -1,0 +1,83 @@
+.assistant-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.assistant-section h3 {
+  margin-top: 0;
+  font-size: 20px;
+}
+
+.assistant-section > p {
+  color: #6b7280;
+}
+
+.assistant-section textarea {
+  width: 100%;
+  padding: 14px;
+  margin: 15px 0;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.assistant-section textarea:focus {
+  outline: none;
+  border-color: #111827;
+}
+
+.assistant-section button {
+  width: auto;
+  padding: 11px 22px;
+}
+
+.answer-box {
+  margin-top: 25px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border-left: 4px solid #111827;
+}
+
+.answer-box h4,
+.sources-box h4 {
+  margin-top: 0;
+}
+
+.answer {
+  white-space: pre-line;
+  line-height: 1.7;
+}
+
+.query-info {
+  margin-top: 20px;
+  padding: 12px;
+  background: #eef2ff;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.sources-box {
+  margin-top: 25px;
+}
+
+.source {
+  margin-top: 15px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.source p {
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.source small {
+  color: #6b7280;
+}

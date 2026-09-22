@@ -1,0 +1,6 @@
+# NOT installed at M0-M5. Added at the milestone that needs each package.
+# Keeping these separate means a heavy/fragile ML install can never block the API work.
+#
+# M4  PDF extraction:        pymupdf        (AGPL-3.0 licence - decide at M4; pypdf is a permissive fallback)
+# M6  Local embeddings:      sentence-transformers   (pulls in torch + transformers; optional if using an embeddings API)
+# M11 Cross-encoder rerank:  sentence-transformers   (CrossEncoder class; same dependency as above)

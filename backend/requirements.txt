@@ -1,0 +1,16 @@
+# Runtime dependencies needed for M1-M3 (API, database, auth).
+# Heavy / later-milestone packages live in requirements-ml.txt on purpose.
+# Loose lower bounds only where a Python 3.14 wheel floor is known.
+# After a successful install, freeze exact versions:  pip freeze > requirements.lock.txt
+
+fastapi
+uvicorn[standard]
+pydantic>=2.12
+pydantic-settings
+python-multipart
+sqlalchemy>=2.0
+alembic
+psycopg[binary]>=3.3
+pgvector
+pyjwt
+argon2-cffi
